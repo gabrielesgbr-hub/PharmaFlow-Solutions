@@ -6,7 +6,7 @@ const {connectPostgres} = require('./config/db_postgres')
 const port = process.env.PORT || 5000 
 
 connectDB() //nos conectamos a la base de datos de mongo atlas
-connectPostgres()
+connectPostgres() //nos conectamos a la base de datos postgres en render
 
 const app = express()
 

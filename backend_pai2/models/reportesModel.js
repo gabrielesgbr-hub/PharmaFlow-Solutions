@@ -1,4 +1,4 @@
-//Coleccion reportes en MO¿ongoDB
+//Coleccion reportes en MongoDB
 //Las referencias a la base de datos Postgres son logicas no fisicas
 
 const mongoose = require('mongoose')
