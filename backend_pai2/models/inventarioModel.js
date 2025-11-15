@@ -37,3 +37,8 @@ const Inventario = sequelize.define("Inventario", {
 
 module.exports = Inventario
 
+Inventario.associate = (models) => {
+    Inventario.belongsTo(models.Producto, {foreignKey: 'id_producto', as: 'producto'});
+    Inventario.belongsTo(models.Usuario, {foreignKey: 'id_usuario', as: 'usuario'});
+};
+
