@@ -9,7 +9,7 @@ const getReportes = asyncHandler(async(req, res)=>{
 const createReportes = asyncHandler(async(req, res)=>{
     if(!req.body.titulo || !req.body.contenido || !req.body.producto || !req.body.lote){
         res.status(400)
-        throw new Error('Favot de introducir los datos completos')
+        throw new Error('Favor de introducir los datos completos')
     }
     const reporte = await Reporte.create({
         titulo: req.body.titulo,
