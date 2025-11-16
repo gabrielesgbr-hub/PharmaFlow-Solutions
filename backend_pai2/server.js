@@ -13,5 +13,9 @@ const app = express()
 app.use(express.json())
 app.use(express.urlencoded({extended:false}))
 
+app.use('/api/usuarios', require('./routes/usuariosRoutes'))
+app.use('/api/reportes', require('./routes/reportesRoutes'))
+
+
 app.listen(port, ()=>console.log(`Servidor Iniciado en el puerto: ${port}`))
 console.log("HOLA CRAYOLA")

@@ -1,6 +1,6 @@
 //Entidad de usuarios en PostgreSQL
 const {DataTypes} = require('sequelize')
-const sequelize = require('../config/db_postgres')
+const {sequelize} = require('../config/db_postgres')
 
 const Inventario = sequelize.define("Inventario", {
     id_inventario: {
@@ -31,7 +31,7 @@ const Inventario = sequelize.define("Inventario", {
         defaultValue: DataTypes.NOW
     }
 }, {
-    tableName: "Inventario",
+    tableName: "inventario",
     timestamps: false
 })
 
