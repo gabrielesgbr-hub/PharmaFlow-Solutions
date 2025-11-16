@@ -47,6 +47,21 @@ const register = asyncHandler(async(req, res)=>{
         }
     }
 })
+
+const deleteU = asyncHandler(async(req, res)=>{
+    const id_usuario = req.usuario.id_usuario
+
+    const usuario = await Usuario.findByPk(id_usuario)
+    
+    if(!usuario){
+        res.status(404)
+        throw new Error("Usuario no encontrado")
+    }else{
+        await usuario.destroy()
+        res.status(200).json({id_usuario:id_usuario}) 
+    } 
+})
+
 const data = asyncHandler(async(req,res) => {
     res.status(200).json(req.usuario)
 })
@@ -58,5 +73,5 @@ const generarToken = (id_usuario) => {
 }
 
 module.exports = {
-    login, register, data
+    login, register, data, deleteU
 }
