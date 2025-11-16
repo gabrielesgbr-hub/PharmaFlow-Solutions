@@ -1,7 +1,7 @@
 //Utiliza postgreSQL
 // Entidad de productos en PostgreSQL
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db_postgres');
+const { sequelize } = require('../config/db_postgres');
 
 const Producto = sequelize.define("Producto", {
     id_producto: {
@@ -31,7 +31,7 @@ const Producto = sequelize.define("Producto", {
         defaultValue: DataTypes.NOW
     }
 }, {
-    tableName: "Producto",
+    tableName: "producto",
     timestamps: false
 });
 
