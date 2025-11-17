@@ -36,4 +36,15 @@ const protect = asyncHandler(async (req, res, next) => {
     }
 })
 
-module.exports = { protect }
+const autenticarRol = (...rolesPermitidos) => {
+    return (req, res, next) => {
+
+        if (!req.usuario || !rolesPermitidos.includes(req.usuario.rol)) {
+            return res.status(403).json({ message: 'Acceso denegado: Rol no valido' })
+        }
+
+        next()
+    };
+};
+
+module.exports = { protect, autenticarRol }

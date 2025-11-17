@@ -17,7 +17,7 @@ const Usuario = sequelize.define("Usuario",{
         allowNull: false
     },
     rol_sql: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM("gerente","farmaceutico","investigador"),
         allowNull: false
     },
     fecha_registro: {

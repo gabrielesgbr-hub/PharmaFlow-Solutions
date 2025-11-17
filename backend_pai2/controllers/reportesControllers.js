@@ -2,7 +2,7 @@ const asyncHandler = require('express-async-handler')
 const Reporte = require('../models/reportesModel')
 
 const getReportes = asyncHandler(async(req, res)=>{
-    const reportes = await Reporte.find({ "autor.id_usuario": req.usuario.id_usuario })
+    const reportes = await Reporte.find()
     res.status(200).json(reportes)
 })
 

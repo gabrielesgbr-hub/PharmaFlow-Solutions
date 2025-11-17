@@ -4,9 +4,9 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
 const login = asyncHandler(async(req, res)=>{
-    const {id_usuario, password} = req.body
+    const {nombre, password} = req.body
 
-    const usuario = await Usuario.findByPk(id_usuario)
+    const usuario = await Usuario.findOne({where:{nombre}})
 
     if(usuario && (await bcrypt.compare(password, usuario.password))){
         res.status(200).json({
@@ -16,6 +16,9 @@ const login = asyncHandler(async(req, res)=>{
             fecha_registro: usuario.fecha_registro,
             token: generarToken(usuario.id_usuario)
         })
+    } else{
+        res.status(404)
+        throw new Error ('Datos del usuario incorrectos')
     }
 })
 
@@ -48,10 +51,8 @@ const register = asyncHandler(async(req, res)=>{
     }
 })
 
-const deleteU = asyncHandler(async(req, res)=>{
-    const id_usuario = req.usuario.id_usuario
-
-    const usuario = await Usuario.findByPk(id_usuario)
+const deleteUsuario = asyncHandler(async(req, res)=>{
+    const usuario = await Usuario.findByPk(req.params.id_usuario)
     
     if(!usuario){
         res.status(404)
@@ -60,6 +61,11 @@ const deleteU = asyncHandler(async(req, res)=>{
         await usuario.destroy()
         res.status(200).json({id_usuario:id_usuario}) 
     } 
+})
+
+const getUsuarios = asyncHandler(async(req, res)=>{
+    const usuarios = await Usuario.findAll()
+    res.status(200).json(usuarios)
 })
 
 const data = asyncHandler(async(req,res) => {
@@ -73,5 +79,5 @@ const generarToken = (id_usuario) => {
 }
 
 module.exports = {
-    login, register, data, deleteU
+    login, register, data, deleteUsuario, getUsuarios
 }
