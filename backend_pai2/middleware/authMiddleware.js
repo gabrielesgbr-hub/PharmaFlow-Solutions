@@ -39,7 +39,7 @@ const protect = asyncHandler(async (req, res, next) => {
 const autenticarRol = (...rolesPermitidos) => {
     return (req, res, next) => {
 
-        if (!req.usuario || !rolesPermitidos.includes(req.usuario.rol)) {
+        if (!req.usuario || !rolesPermitidos.includes(req.usuario.rol_sql)) {
             return res.status(403).json({ message: 'Acceso denegado: Rol no valido' })
         }
 
