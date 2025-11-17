@@ -8,7 +8,7 @@ router.post('/login', login)
 router.post('/register', register)
 
 //endpoints protegidos
-router.get('/', protect, autenticarRol('gerente'), getUsuarios)
+router.get('/', protect, autenticarRol('gerente', 'investigador'), getUsuarios)
 router.get('/data', protect, data)
 router.delete('/delete', protect, autenticarRol('gerente'), deleteUsuario)
 

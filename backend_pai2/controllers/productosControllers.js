@@ -1,60 +1,68 @@
-const Producto = require('../models/productoModel');
+const asyncHandler = require('express-async-handler');
+const Producto = require('../models/productosModel');
+const Inventario = require('../models/inventarioModel');
 
-// Listar todos los productos
-const listarProductos = async (req, res) => {
-    try {
-        const productos = await Producto.findAll();
-        res.json(productos);
-    } catch (error) {
-        res.status(500).json({ message: "Error al obtener los productos" });
+const getProductos = asyncHandler(async (req, res) => {
+    const productos = await Producto.findAll();
+    res.status(200).json(productos);
+});
+
+const createProductos = asyncHandler(async (req, res) => {
+    const { nombre, principio_activo, presentacion, precio_unitario} = req.body;
+
+    if (!nombre || !principio_activo || !presentacion || !precio_unitario) {
+        res.status(400);
+        throw new Error('Favor de introducir todos los datos del producto');
     }
-};
 
-// Crear un nuevo producto
-const crearProducto = async (req, res) => {
-    try {
-        const { nombre, principio_activo, presentacion, precio_unitario } = req.body;
+    const nuevoProducto = await Producto.create({
+        nombre,
+        principio_activo,
+        presentacion,
+        precio_unitario,
+    });
 
-        const nuevoProducto = await Producto.create({
-            nombre,
-            principio_activo,
-            presentacion,
-            precio_unitario
-        });
+    res.status(201).json(nuevoProducto);
+});
 
-        res.json(nuevoProducto);
-    } catch (error) {
-        res.status(500).json({ message: "Error al crear el producto" });
+const updateProductos = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const producto = await Producto.findByPk(id);
+
+    if (!producto) {
+        res.status(400);
+        throw new Error('Producto no encontrado');
     }
-};
 
-// Actualizar un producto existente
-const actualizarProducto = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { nombre, principio_activo, presentacion, precio_unitario } = req.body;
+    const productoActualizado = await producto.update(req.body);
 
-        const producto = await Producto.findByPk(id);
+    res.status(200).json(productoActualizado);
+});
 
-        if (!producto) {
-            return res.status(404).json({ message: "Producto no encontrado" });
-        }
+const delateProductos = asyncHandler(async (req, res) => {
+    const { id } = req.params;
 
-        producto.nombre = nombre || producto.nombre;
-        producto.principio_activo = principio_activo || producto.principio_activo;
-        producto.presentacion = presentacion || producto.presentacion;
-        producto.precio_unitario = precio_unitario || producto.precio_unitario;
+    const producto = await Producto.findByPk(id);
 
-        await producto.save();
-
-        res.json(producto);
-    } catch (error) {
-        res.status(500).json({ message: "Error al actualizar el producto" });
+    if (!producto) {
+        res.status(400);
+        throw new Error('Producto no encontrado');
     }
-};
+
+    // Borrar inventarios que usan este producto
+    await Inventario.destroy({
+        where: { id_producto: id }
+    });
+
+    // Borrar el producto
+    await producto.destroy();
+    res.status(200).json({ id });
+});
 
 module.exports = {
-    listarProductos,
-    crearProducto,
-    actualizarProducto
+    getProductos,
+    createProductos,
+    updateProductos,
+    delateProductos
 };
