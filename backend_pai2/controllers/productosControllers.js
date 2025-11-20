@@ -50,14 +50,22 @@ const delateProductos = asyncHandler(async (req, res) => {
         throw new Error('Producto no encontrado');
     }
 
-    // Borrar inventarios que usan este producto
-    await Inventario.destroy({
-        where: { id_producto: id }
-    });
+    const t = await Producto.sequelize.transaction();
+    try{
+        // Borrar inventarios que usan este producto
+        await Inventario.destroy({
+            where: { id_producto: id },
+            transaction: t
+        });
 
-    // Borrar el producto
-    await producto.destroy();
-    res.status(200).json({ id });
+        // Borrar el producto
+        await producto.destroy({transaction: t});
+        await t.commit;
+        res.status(200).json({ id });
+    } catch (error){
+        await t.rollback();
+        throw error;
+    }
 });
 
 module.exports = {

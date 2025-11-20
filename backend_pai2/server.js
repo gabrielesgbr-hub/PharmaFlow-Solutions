@@ -22,4 +22,3 @@ app.use('/api/registros', require('./routes/inventarioRoutes'))
 app.use(errorHandler)
 
 app.listen(port, ()=>console.log(`Servidor Iniciado en el puerto: ${port}`))
-console.log("HOLA CRAYOLA")
