@@ -17,7 +17,7 @@ describe('inventarioController', () => {
     jest.resetAllMocks()
     res = buildRes()
     next = jest.fn()
-  });
+  })
 
   test('1. Value y Structural: deleteRegistro responde 200 y { id }', async () => {
     Inventario.findByPk.mockResolvedValue({ destroy: jest.fn() })
@@ -27,7 +27,7 @@ describe('inventarioController', () => {
 
     expect(res.statusCode).toBe(200)
     expect(res.json.mock.calls[0][0]).toStrictEqual({ id: '5' })
-  });
+  })
 
   test('2. Behavioral y Mock: createRegistro llama a create una vez con los datos correctos', async () => {
     Inventario.create.mockResolvedValue({ id: 1 })
@@ -37,7 +37,7 @@ describe('inventarioController', () => {
 
     expect(Inventario.create).toHaveBeenCalledTimes(1)
     expect(Inventario.create).toHaveBeenCalledWith({ id_producto: 3, id_usuario: 7, lote: 'L-9', cantidad_disponible: 5 })
-  });
+  })
 
   test('3. Asymmetric y Partial: updateRegistro manda los campos y una fecha dinámica', async () => {
     const registro = { version: 1, update: jest.fn().mockResolvedValue({}) }
@@ -48,8 +48,8 @@ describe('inventarioController', () => {
 
     expect(registro.update).toHaveBeenCalledWith(
       expect.objectContaining({ cantidad_disponible: 20, fecha_ult_actualizacion: expect.any(Date) })
-    );
-  });
+    )
+  })
 
   test('4. Exceptions y Async: updateRegistro lanza error 409 por versión desactualizada', async () => {
     Inventario.findByPk.mockResolvedValue({ version: 5 })
@@ -60,7 +60,7 @@ describe('inventarioController', () => {
     await expect(promise).resolves.toBeUndefined()
     expect(res.statusCode).toBe(409)
     expect(() => { throw next.mock.calls[0][0]; }).toThrow('conflicto de concurrencia')
-  });
+  })
 
   test('5. Existence y Truthiness: createRegistro asigna id_usuario y default de cantidad', async () => {
     Inventario.create.mockResolvedValue({ id: 1 })
@@ -73,7 +73,7 @@ describe('inventarioController', () => {
     expect(payload.id_usuario).toBeDefined()
     expect(payload.lote).toBeTruthy()
     expect(payload.cantidad_disponible).toBeFalsy()
-  });
+  })
 
   test('6. Collections y Strings: getRegistro devuelve la lista esperada', async () => {
     const buscado = { id: 2, lote: 'L-2' }
