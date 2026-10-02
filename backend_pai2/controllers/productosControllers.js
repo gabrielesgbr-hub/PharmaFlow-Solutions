@@ -40,7 +40,7 @@ const updateProductos = asyncHandler(async (req, res) => {
     res.status(200).json(productoActualizado);
 });
 
-const delateProductos = asyncHandler(async (req, res) => {
+const deleteProductos = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     const producto = await Producto.findByPk(id);
@@ -72,5 +72,5 @@ module.exports = {
     getProductos,
     createProductos,
     updateProductos,
-    delateProductos
+    deleteProductos
 };

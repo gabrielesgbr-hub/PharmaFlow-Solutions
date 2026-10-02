@@ -1,0 +1,1 @@
+process.env.POSTGRES_URI = 'postgres://user:pass@localhost:5432/fakedb';

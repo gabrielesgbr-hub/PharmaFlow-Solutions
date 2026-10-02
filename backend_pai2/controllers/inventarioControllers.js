@@ -90,7 +90,3 @@ module.exports = {
     updateRegistro,
     deleteRegistro
 };
-
-
-
-
