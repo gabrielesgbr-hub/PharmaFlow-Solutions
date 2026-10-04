@@ -1,47 +1,68 @@
-const {createProductos, updateProductos, deleteProductos} = require('../controllers/productosControllers')
+const { createProductos, updateProductos, deleteProductos } = require('../controllers/productosControllers')
 const Producto = require('../models/productosModel')
 const Inventario = require('../models/inventarioModel')
+const { makeReq, makeRes } = require('../fixtures/httpFactory')
+const { productoValido, makeProductoDb } = require('../fixtures/productosFixtures')
 
 jest.mock('../models/productosModel')
 jest.mock('../models/inventarioModel')
 
-test('createProductos - crea un producto con los datos dados', async () => {
-    // arrange
-    const req = { body: { nombre: 'Paracetamol', principio_activo: 'Acetaminofén', presentacion: 'Tableta', precio_unitario: 15 } }
-    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
-    Producto.create.mockResolvedValue({ id: 1, ...req.body })
+describe('productosController', () => {
+  let res, sequelizeOriginal
 
-    // act
-    await createProductos(req, res)
+  beforeAll(() => {
+    sequelizeOriginal = Producto.sequelize
+  })
 
-    // assert
-    expect(res.status).toHaveBeenCalledWith(201)
-})
+  afterAll(() => {
+    Producto.sequelize = sequelizeOriginal
+  })
 
-test('updateProductos - actualiza un producto existente', async () => {
-    // arrange
-    const req = { params: { id: 1 }, body: { precio_unitario: 25 } };
-    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
-    Producto.findByPk.mockResolvedValue({ update: jest.fn().mockResolvedValue({ id: 1, precio_unitario: 25 }) })
+  beforeEach(() => {
+    res = makeRes()
+  })
 
-    // act
-    await updateProductos(req, res)
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
 
-    // assert
-    expect(res.status).toHaveBeenCalledWith(200)
-})
+  describe('createProductos', () => {
+    test('crea un producto con los datos dados', async () => {
+      const req = makeReq({ body: productoValido })
+      Producto.create.mockResolvedValue({ id: 1, ...productoValido })
 
-test('deleteProductos - borra producto e inventarios relacionados', async () => {
-    // arrange
-    const req = { params: { id: 1 } }
-    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
-    Producto.sequelize = { transaction: jest.fn().mockResolvedValue({ commit: jest.fn(), rollback: jest.fn() }) }
-    Producto.findByPk.mockResolvedValue({ id: 1, destroy: jest.fn() })
-    Inventario.destroy.mockResolvedValue(1)
+      await createProductos(req, res)
 
-    // act
-    await deleteProductos(req, res)
+      expect(res.status).toHaveBeenCalledWith(201)
+    })
+  })
 
-    // assert
-    expect(res.status).toHaveBeenCalledWith(200)
+  describe('updateProductos', () => {
+    test('actualiza un producto existente', async () => {
+      const req = makeReq({ params: { id: 1 }, body: { precio_unitario: 25 } })
+      Producto.findByPk.mockResolvedValue(makeProductoDb({ precio_unitario: 25 }))
+
+      await updateProductos(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(200)
+    })
+  })
+
+  describe('deleteProductos', () => {
+    beforeEach(() => {
+      Producto.sequelize = {
+        transaction: jest.fn().mockResolvedValue({ commit: jest.fn(), rollback: jest.fn() }),
+      }
+    })
+
+    test('borra producto e inventarios relacionados', async () => {
+      const req = makeReq({ params: { id: 1 } })
+      Producto.findByPk.mockResolvedValue(makeProductoDb())
+      Inventario.destroy.mockResolvedValue(1)
+
+      await deleteProductos(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(200)
+    })
+  })
 })

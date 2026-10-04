@@ -2,26 +2,39 @@ jest.mock('../models/inventarioModel')
 
 const Inventario = require('../models/inventarioModel')
 const { getRegistro, createRegistro, updateRegistro, deleteRegistro } = require('../controllers/inventarioControllers')
-
-const buildRes = () => {
-  const res = {}
-  res.status = jest.fn((code) => { res.statusCode = code; return res; })
-  res.json = jest.fn()
-  return res
-};
+const { makeReq, makeRes } = require('../fixtures/httpFactory')
+const {
+  usuarioAutenticado,
+  inventarioValido,
+  makeInventarioBody,
+  makeUpdateBody,
+  makeRegistroDb,
+  makeInventarioLista,
+} = require('../fixtures/inventarioFixtures')
 
 describe('inventarioController', () => {
-  let res, next
+  let res, next, listaInventario
+
+  beforeAll(() => {
+    listaInventario = makeInventarioLista(2)
+  })
+
+  afterAll(() => {
+    listaInventario = null
+  })
 
   beforeEach(() => {
-    jest.resetAllMocks()
-    res = buildRes()
+    res = makeRes()
     next = jest.fn()
   })
 
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
   test('1. Value y Structural: deleteRegistro responde 200 y { id }', async () => {
-    Inventario.findByPk.mockResolvedValue({ destroy: jest.fn() })
-    const req = { params: { id: '5' } }
+    Inventario.findByPk.mockResolvedValue(makeRegistroDb())
+    const req = makeReq({ params: { id: '5' } })
 
     await deleteRegistro(req, res, next)
 
@@ -31,18 +44,21 @@ describe('inventarioController', () => {
 
   test('2. Behavioral y Mock: createRegistro llama a create una vez con los datos correctos', async () => {
     Inventario.create.mockResolvedValue({ id: 1 })
-    const req = { body: { id_producto: 3, lote: 'L-9', cantidad_disponible: 5 }, usuario: { id_usuario: 7 } }
+    const req = makeReq({ body: inventarioValido, usuario: usuarioAutenticado })
 
     await createRegistro(req, res, next)
 
     expect(Inventario.create).toHaveBeenCalledTimes(1)
-    expect(Inventario.create).toHaveBeenCalledWith({ id_producto: 3, id_usuario: 7, lote: 'L-9', cantidad_disponible: 5 })
+    expect(Inventario.create).toHaveBeenCalledWith({
+      ...inventarioValido,
+      id_usuario: usuarioAutenticado.id_usuario,
+    })
   })
 
   test('3. Asymmetric y Partial: updateRegistro manda los campos y una fecha dinámica', async () => {
-    const registro = { version: 1, update: jest.fn().mockResolvedValue({}) }
+    const registro = makeRegistroDb({ version: 1 })
     Inventario.findByPk.mockResolvedValue(registro)
-    const req = { params: { id: 1 }, body: { version: 1, cantidad_disponible: 20 } }
+    const req = makeReq({ params: { id: 1 }, body: makeUpdateBody() })
 
     await updateRegistro(req, res, next)
 
@@ -52,19 +68,22 @@ describe('inventarioController', () => {
   })
 
   test('4. Exceptions y Async: updateRegistro lanza error 409 por versión desactualizada', async () => {
-    Inventario.findByPk.mockResolvedValue({ version: 5 })
-    const req = { params: { id: 1 }, body: { version: 4 } }
+    Inventario.findByPk.mockResolvedValue(makeRegistroDb({ version: 5 }))
+    const req = makeReq({ params: { id: 1 }, body: makeUpdateBody({ version: 4 }) })
 
     const promise = updateRegistro(req, res, next)
 
     await expect(promise).resolves.toBeUndefined()
     expect(res.statusCode).toBe(409)
-    expect(() => { throw next.mock.calls[0][0]; }).toThrow('conflicto de concurrencia')
+    expect(() => { throw next.mock.calls[0][0] }).toThrow('conflicto de concurrencia')
   })
 
   test('5. Existence y Truthiness: createRegistro asigna id_usuario y default de cantidad', async () => {
     Inventario.create.mockResolvedValue({ id: 1 })
-    const req = { body: { id_producto: 3, lote: 'L-9' }, usuario: { id_usuario: 7 } }
+    const req = makeReq({
+      body: makeInventarioBody({ cantidad_disponible: undefined }),
+      usuario: usuarioAutenticado,
+    })
 
     await createRegistro(req, res, next)
 
@@ -76,14 +95,13 @@ describe('inventarioController', () => {
   })
 
   test('6. Collections y Strings: getRegistro devuelve la lista esperada', async () => {
-    const buscado = { id: 2, lote: 'L-2' }
-    Inventario.findAll.mockResolvedValue([{ id: 1, lote: 'L-1' }, buscado])
-    const req = { params: {} }
+    Inventario.findAll.mockResolvedValue(listaInventario)
+    const req = makeReq()
 
     await getRegistro(req, res, next)
 
     const lista = res.json.mock.calls[0][0]
-    expect(lista).toContain(buscado)
+    expect(lista).toContain(listaInventario[1])
     expect(lista).toHaveLength(2)
     expect(lista[0].lote).toMatch(/^L-\d+$/)
   })
