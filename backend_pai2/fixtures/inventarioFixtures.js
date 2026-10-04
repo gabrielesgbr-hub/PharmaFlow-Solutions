@@ -6,7 +6,6 @@ const inventarioValido = Object.freeze({
   cantidad_disponible: 5,
 })
  
-// ---------- Fixtures DINÁMICOS (Factory: defaults + overrides) ----------
 const makeInventarioBody = (overrides = {}) => ({
   id_producto: 3,
   lote: 'L-9',
@@ -20,7 +19,6 @@ const makeUpdateBody = (overrides = {}) => ({
   ...overrides,
 })
  
-// Registro "de base de datos": los jest.fn() son nuevos en cada llamada
 const makeRegistroDb = (overrides = {}) => ({
   id: 1,
   version: 1,
